@@ -1,0 +1,12 @@
+name: Run searches
+on: push
+jobs:
+  hello-world:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+            python-version: '3.x'
+      - name: Run hello-world
+        run: python3 src/main.py
