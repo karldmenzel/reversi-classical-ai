@@ -1,0 +1,63 @@
+#Zijie Zhang, Sep.24/2023
+
+import numpy as np
+import socket, pickle
+from reversi import reversi
+import time
+
+def main():
+    game_socket = socket.socket()
+    game_socket.connect(('127.0.0.1', 33333))
+    game = reversi()
+
+    while True:
+
+        #Receive play request from the server
+        #turn : 1 --> you are playing as white | -1 --> you are playing as black
+        #board : 8*8 numpy array
+        data = game_socket.recv(4096)
+        turn, board = pickle.loads(data)
+
+        #Turn = 0 indicates game ended
+        if turn == 0:
+            game_socket.close()
+            return
+        
+        #Debug info
+        print(turn)
+        print(board)
+
+        #Local Greedy - Replace with your algorithm
+        x = -1
+        y = -1
+        max = 0
+        game.board = board
+        best_move_list = []
+
+        for i in range(8):
+            for j in range(8):
+                cur = game.step(i, j, turn, False)
+                # any move that leads to a flipped piece is stored in the list
+                if cur > 0:
+                    # add tuple to move list where: cur=#of flipped tiles, i=x, j=y
+                    best_move_list.append((cur, i, j))
+
+        # no moves were found
+        if len(best_move_list) == 0:
+            x, y = (-1, -1)
+        else:
+            # sort the list in order of most flipped pieces, then choose the first best one
+            best_move_list = sorted(best_move_list, key=lambda tup: tup[0], reverse=True)
+            _, x, y = best_move_list[0]
+            # print statements for debugging
+            print(best_move_list)
+            print(x, y)
+        #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
+        game_socket.send(pickle.dumps([x,y]))
+        
+def mini_max():
+    # need to store a list of possible moves, their outcomes, and weigh them
+    pass
+
+if __name__ == '__main__':
+    main()
