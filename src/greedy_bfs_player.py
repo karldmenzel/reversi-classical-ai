@@ -47,6 +47,9 @@ def main():
             x, y = (-1, -1)
         else:
             # sort the list in order of most flipped pieces, then choose the first best one
+            print("best move list before:", best_move_list)
+            mini_max(best_move_list)
+            print("best move list after minimax", best_move_list)
             best_move_list = sorted(best_move_list, key=lambda tup: tup[0], reverse=True)
             _, x, y = best_move_list[0]
             # print statements for debugging
@@ -55,9 +58,17 @@ def main():
         #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
         game_socket.send(pickle.dumps([x,y]))
         
-def mini_max():
+def mini_max(next_moves):
+    # if next move is along the walls on the x axis, increase the value 
+    for i in range(0, len(next_moves)):
+        if next_moves[i][1] == 0 or next_moves[i][1] == 7: 
+            next_moves[i] = (next_moves[i][0] * 10, next_moves[i][1], next_moves[i][2])
+        if next_moves[i][2] == 0 or next_moves[i][2] == 7: 
+            next_moves[i] = (next_moves[i][0] * 10, next_moves[i][1], next_moves[i][2])
+        i += 1
+
     # need to store a list of possible moves, their outcomes, and weigh them
-    pass
+    return
 
 if __name__ == '__main__':
     main()
