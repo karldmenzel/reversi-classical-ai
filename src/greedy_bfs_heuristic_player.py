@@ -4,6 +4,7 @@ import numpy as np
 import socket, pickle
 from reversi import reversi
 import time
+from utils import calculate_final_score
 
 def main():
     game_socket = socket.socket()
@@ -20,12 +21,15 @@ def main():
 
         #Turn = 0 indicates game ended
         if turn == 0:
+            print("reached here")
+            calculate_final_score(board)
             game_socket.close()
             return
         
         #Debug info
         print(turn)
         print(board)
+        calculate_final_score(board)
 
         #Local Greedy - Replace with your algorithm
         x = -1
@@ -74,6 +78,19 @@ def mini_max(next_moves, turn):
 
     # need to store a list of possible moves, their outcomes, and weigh them
     return
+
+# def calculate_final_score(board):
+#     black_tiles = 0
+#     white_tiles = 0
+#     for row in board:
+#         for tile in row:
+#             if tile == -1:
+#                 black_tiles += 1
+#             elif tile == 1:
+#                 white_tiles += 1
+#     print("white score", white_tiles, "black score", black_tiles)
+
+#     return
 
 if __name__ == '__main__':
     main()
