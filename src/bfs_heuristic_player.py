@@ -21,7 +21,6 @@ def main():
 
         #Turn = 0 indicates game ended
         if turn == 0:
-            print("reached here")
             calculate_final_score(board)
             game_socket.close()
             return
@@ -57,8 +56,8 @@ def main():
             best_move_list = sorted(best_move_list, key=lambda tup: tup[0], reverse=True)
             _, x, y = best_move_list[0]
             # print statements for debugging
-            print(best_move_list)
-            print(x, y)
+            # print(best_move_list)
+            # print(x, y)
         #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
         game_socket.send(pickle.dumps([x,y]))
         
@@ -78,19 +77,6 @@ def mini_max(next_moves, turn):
 
     # need to store a list of possible moves, their outcomes, and weigh them
     return
-
-# def calculate_final_score(board):
-#     black_tiles = 0
-#     white_tiles = 0
-#     for row in board:
-#         for tile in row:
-#             if tile == -1:
-#                 black_tiles += 1
-#             elif tile == 1:
-#                 white_tiles += 1
-#     print("white score", white_tiles, "black score", black_tiles)
-
-#     return
 
 if __name__ == '__main__':
     main()

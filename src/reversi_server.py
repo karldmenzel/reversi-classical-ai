@@ -162,7 +162,7 @@ def main():
         game.render(screen)
 
         pygame.display.update()
-        clock.tick(4)
+        clock.tick(2)
 
     game_server.request_play(0, game.board, 0)
     game_server.request_play(0, game.board, 1)
