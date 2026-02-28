@@ -7,7 +7,7 @@ from reversi import reversi
 
 # Positional weight matrix for the heuristic evaluation.
 # Corners are highly valuable, edges are good, positions adjacent
-# to corners (X-squares and C-squares) are dangerous.
+# to corners (X-squares and C-squares) are dangerous. This can be played around with. Probably makes a big difference
 WEIGHT_MATRIX = np.array([
     [ 100, -20,  10,   5,   5,  10, -20,  100],
     [ -20, -50,  -2,  -2,  -2,  -2, -50,  -20],
@@ -22,7 +22,7 @@ WEIGHT_MATRIX = np.array([
 # Early-game bonus for controlling the center 4x4 square (rows/cols 2-5).
 # Holding the center forces the opponent to play on the outer ring, making
 # edge and corner captures easier in the mid-to-late game.
-# This bonus fades linearly to zero once ~36 pieces are on the board.
+# This bonus fades linearly to zero once 36 pieces are on the board.
 CENTER_BONUS = np.zeros((8, 8))
 CENTER_BONUS[2:6, 2:6] = np.array([
     [ 8, 12, 12,  8],
@@ -60,7 +60,7 @@ def apply_move(board, game, x, y, piece):
 
 def heuristic(board, player):
     """
-    Evaluate the board from the perspective of `player`.
+    Evaluates the board from the perspective of `player`.
 
     Combines four factors:
       1. Positional weights    - rewards corners/edges, penalizes risky squares
@@ -79,7 +79,7 @@ def heuristic(board, player):
     opponent_count = int(np.sum(board == opponent))
     total_pieces = player_count + opponent_count
 
-    # Early-game center control bonus: linearly decays from full strength at
+    # Early-game center control bonus: linearly decreases from full strength at
     # game start (4 pieces) to zero at 36 pieces. Holding the center 4x4 forces
     # the opponent onto the outer ring, setting up edge and corner steals later.
     center_scale = max(0.0, (36 - total_pieces) / 32.0)
@@ -144,7 +144,7 @@ def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline
     # encounters tighter bounds earlier and prunes more branches. (eliminating unnecessary searches)
     legal_moves.sort(key=lambda m: WEIGHT_MATRIX[m[0], m[1]], reverse=True)
 
-    # Terminal conditions: max depth or no moves for either side
+    # Escape conditions: max depth or no moves for either side
     if depth == 0 or len(legal_moves) == 0:
 
         # if no available moves it's the opponents "turn" and evaluate their options
