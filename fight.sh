@@ -1,0 +1,1 @@
+python3 src/reversi_server.py & python3 src/greedy_player.py & python3 src/greedy_bfs_player.py
