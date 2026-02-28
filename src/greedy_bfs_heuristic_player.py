@@ -48,7 +48,7 @@ def main():
         else:
             # sort the list in order of most flipped pieces, then choose the first best one
             print("best move list before:", best_move_list)
-            # mini_max(best_move_list, turn) # commented out line no longer performs improved heuristic function
+            mini_max(best_move_list, turn)
             print("best move list after minimax", best_move_list)
             best_move_list = sorted(best_move_list, key=lambda tup: tup[0], reverse=True)
             _, x, y = best_move_list[0]

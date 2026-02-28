@@ -48,7 +48,7 @@ def main():
         else:
             # sort the list in order of most flipped pieces, then choose the first best one
             print("best move list before:", best_move_list)
-            # mini_max(best_move_list, turn) # commented out line no longer performs improved heuristic function
+            mini_max(best_move_list)
             print("best move list after minimax", best_move_list)
             best_move_list = sorted(best_move_list, key=lambda tup: tup[0], reverse=True)
             _, x, y = best_move_list[0]
@@ -58,7 +58,7 @@ def main():
         #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
         game_socket.send(pickle.dumps([x,y]))
         
-def mini_max(next_moves, turn):
+def mini_max(next_moves):
     for i in range(0, len(next_moves)):
         # if next move is along the walls on the x axis, increase the heuristic value 
         if next_moves[i][1] == 0 or next_moves[i][1] == 7: 
@@ -67,9 +67,8 @@ def mini_max(next_moves, turn):
         if next_moves[i][2] == 0 or next_moves[i][2] == 7: 
             next_moves[i] = (next_moves[i][0] * 10, next_moves[i][1], next_moves[i][2])
         # if next move is within the center blocks (i.e. does not give other player a chance at the walls), increase the value
-        if turn == 1:
-            if (next_moves[i][1] > 1 and next_moves[i][1] < 6) and (next_moves[i][2] > 1 and next_moves[i][2] < 6):
-                next_moves[i] = (next_moves[i][0] * 5, next_moves[i][1], next_moves[i][2])
+        if (next_moves[i][1] > 1 and next_moves[i][1] < 6) and (next_moves[i][2] > 1 and next_moves[i][2] < 6):
+            next_moves[i] = (next_moves[i][0] * 5, next_moves[i][1], next_moves[i][2])
         i += 1
 
     # need to store a list of possible moves, their outcomes, and weigh them
