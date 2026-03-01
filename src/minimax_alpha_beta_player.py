@@ -19,15 +19,6 @@ class TimeUp(Exception):
     """Raised inside minimax when the deadline has been exceeded."""
     pass
 
-
-
-
-
-
-
-
-
-
 def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline, heuristic):
     """
     Minimax search with alpha-beta pruning and a hard time deadline.
