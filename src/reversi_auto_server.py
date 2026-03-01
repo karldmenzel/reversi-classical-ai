@@ -70,7 +70,10 @@ if __name__ == "__main__":
     algorithm_2_wins = 0
     draws = 0
 
-    print("Beginning game one, algorithm 1 is white, algorithm 2 is black.")
+    algorithm_1_name = algorithm_1.__module__
+    algorithm_2_name = algorithm_2.__module__
+
+    print(f"Beginning game one, algorithm 1 ({algorithm_1_name}) is white, algorithm 2 ({algorithm_2_name}) is black.")
     game1 = AutoGameServer(
         player1=algorithm_1,  # White
         player2=algorithm_2   # Black
@@ -85,7 +88,7 @@ if __name__ == "__main__":
     else:
         draws += 1
 
-    print("Beginning game two, algorithm 1 is black, algorithm 2 is white.")
+    print(f"Beginning game two, algorithm 1 ({algorithm_1_name}) is black, algorithm 2 ({algorithm_2_name}) is white.")
     game2 = AutoGameServer(
         player1=algorithm_2,  # White
         player2=algorithm_1   # Black
@@ -103,8 +106,8 @@ if __name__ == "__main__":
     final_result = game1_winner + game2_winner
 
     if algorithm_1_wins == algorithm_2_wins:
-        print("Final result: both algorithms tied.")
+        print(f"Final result: both algorithms tied ({algorithm_1_name} and {algorithm_2_name}).")
     elif algorithm_1_wins > algorithm_2_wins:
-        print("Final result: algorithm 1 wins.")
+        print(f"Final result: algorithm 1 ({algorithm_1_name}) wins.")
     else:
-        print("Final result: algorithm 2 wins.")
+        print(f"Final result: algorithm 2 ({algorithm_2_name}) wins.")
