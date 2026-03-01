@@ -1,35 +1,15 @@
 #Zijie Zhang, Sep.24/2023
 
 import time
-import numpy as np
 import socket, pickle
+import numpy as np
 from reversi import reversi
 
-# Positional weight matrix for the heuristic evaluation.
-# Corners are highly valuable, edges are good, positions adjacent
-# to corners (X-squares and C-squares) are dangerous. This can be played around with. Probably makes a big difference
-WEIGHT_MATRIX = np.array([
-    [ 100, -20,  10,   5,   5,  10, -20,  100],
-    [ -20, -50,  -2,  -2,  -2,  -2, -50,  -20],
-    [  10,  -2,   5,   1,   1,   5,  -2,   10],
-    [   5,  -2,   1,   0,   0,   1,  -2,    5],
-    [   5,  -2,   1,   0,   0,   1,  -2,    5],
-    [  10,  -2,   5,   1,   1,   5,  -2,   10],
-    [ -20, -50,  -2,  -2,  -2,  -2, -50,  -20],
-    [ 100, -20,  10,   5,   5,  10, -20,  100],
-])
+from utils import get_legal_moves, apply_move, WEIGHT_MATRIX
+from heuristic_functions import heuristic_nic
 
-# Early-game bonus for controlling the center 4x4 square (rows/cols 2-5).
-# Holding the center forces the opponent to play on the outer ring, making
-# edge and corner captures easier in the mid-to-late game.
-# This bonus fades linearly to zero once 36 pieces are on the board.
-CENTER_BONUS = np.zeros((8, 8))
-CENTER_BONUS[2:6, 2:6] = np.array([
-    [ 8, 12, 12,  8],
-    [12, 20, 20, 12],
-    [12, 20, 20, 12],
-    [ 8, 12, 12,  8],
-])
+
+
 
 TIME_LIMIT = 4.0   # seconds per move
 MAX_DEPTH   = 12   # hard cap; iterative deepening rarely reaches this
@@ -40,79 +20,15 @@ class TimeUp(Exception):
     pass
 
 
-def get_legal_moves(game, piece):
-    """Return list of (x, y) legal moves for the given piece."""
-    moves = []
-    for i in range(8):
-        for j in range(8):
-            if game.step(i, j, piece, False) > 0:
-                moves.append((i, j))
-    return moves
 
 
-def apply_move(board, game, x, y, piece):
-    """Apply a move on a copy of the board and return the new board state."""
-    new_board = board.copy()
-    game.board = new_board
-    game.step(x, y, piece, True)
-    return new_board
 
 
-def heuristic(board, player):
-    """
-    Evaluates the board from the perspective of `player`.
-
-    Combines four factors:
-      1. Positional weights    - rewards corners/edges, penalizes risky squares
-      2. Center control bonus  - early-game incentive to hold the center 4x4;
-                                 fades to zero once ~36 pieces are on the board
-      3. Piece difference      - having more pieces is good (especially late-game)
-      4. Mobility              - having more moves available is strategically valuable
-    """
-    opponent = -player
-    net_mask = (board == player).astype(float) - (board == opponent).astype(float)
-
-    # Base positional score from corner/edge weight matrix
-    positional_score = float(np.sum(net_mask * WEIGHT_MATRIX))
-
-    player_count = int(np.sum(board == player))
-    opponent_count = int(np.sum(board == opponent))
-    total_pieces = player_count + opponent_count
-
-    # Early-game center control bonus: linearly decreases from full strength at
-    # game start (4 pieces) to zero at 36 pieces. Holding the center 4x4 forces
-    # the opponent onto the outer ring, setting up edge and corner steals later.
-    center_scale = max(0.0, (36 - total_pieces) / 32.0)
-    if center_scale > 0:
-        positional_score += center_scale * float(np.sum(net_mask * CENTER_BONUS))
-
-    # Piece difference
-    if total_pieces > 0:
-        piece_score = 100.0 * (player_count - opponent_count) / total_pieces
-    else:
-        piece_score = 0.0
-
-    # Mobility: number of legal moves available to each side
-    game = reversi()
-    game.board = board.copy()
-    player_moves = len(get_legal_moves(game, player))
-    game.board = board.copy()
-    opponent_moves = len(get_legal_moves(game, opponent))
-    if player_moves + opponent_moves != 0:
-        mobility_score = 100.0 * (player_moves - opponent_moves) / (player_moves + opponent_moves)
-    else:
-        mobility_score = 0.0
-
-    # Weighted combination
-    if total_pieces > 52:
-        # Late game: piece count matters more
-        return positional_score + 3.0 * piece_score + mobility_score
-    else:
-        # Early/mid game: position and mobility matter more
-        return 2.0 * positional_score + piece_score + 2.0 * mobility_score
 
 
-def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline):
+
+
+def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline, heuristic):
     """
     Minimax search with alpha-beta pruning and a hard time deadline.
 
@@ -128,6 +44,7 @@ def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline
         maximizing_player: True if current layer maximizes
         player:            the piece value (1 or -1) of the original caller
         deadline:          time.time() value after which search must stop
+        heuristic:         heuristic function that determines the best move
 
     Returns:
         (score, best_move) tuple
@@ -166,7 +83,7 @@ def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline
             else:
                 # if opponent has moves, recursively call this function as the minimizing player
                 return minimax(board, game, depth - 1, alpha, beta,
-                               not maximizing_player, player, deadline)
+                               not maximizing_player, player, deadline, heuristic)
 
         # determine the best move by calculating the score through the heuristic
         return heuristic(board, player), None
@@ -180,7 +97,7 @@ def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline
         for move in legal_moves:
             new_board = apply_move(board, game, move[0], move[1], current_piece)
             eval_score, _ = minimax(new_board, game, depth - 1, alpha, beta,
-                                    False, player, deadline)
+                                    False, player, deadline, heuristic)
 
             if eval_score > max_eval:
                 max_eval = eval_score
@@ -198,7 +115,7 @@ def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline
         for move in legal_moves:
             new_board = apply_move(board, game, move[0], move[1], current_piece)
             eval_score, _ = minimax(new_board, game, depth - 1, alpha, beta,
-                                    True, player, deadline)
+                                    True, player, deadline, heuristic)
 
             if eval_score < min_eval:
                 min_eval = eval_score
@@ -211,7 +128,7 @@ def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline
         return min_eval, best_move
 
 
-def get_best_move(board, game, player):
+def get_best_move(board, game, player, heuristic):
     """
     Iterative-deepening minimax with a 4-second time limit.
     """
@@ -224,7 +141,7 @@ def get_best_move(board, game, player):
         try:
             _, move = minimax(board, game, depth,
                               float('-inf'), float('inf'),
-                              True, player, deadline)
+                              True, player, deadline, heuristic)
             best_move = move  # only update on a fully completed search
             print(f"  depth {depth} -> {best_move}")
         except TimeUp:
@@ -259,11 +176,12 @@ def main():
         # Find best move via iterative-deepening minimax (4-second limit)
         game.board = board.copy()
         legal_moves = get_legal_moves(game, turn)
+        chosen_heuristic = heuristic_nic
 
         if len(legal_moves) == 0:
             x, y = -1, -1
         else:
-            best_move = get_best_move(board, game, turn)
+            best_move = get_best_move(board, game, turn, chosen_heuristic)
             x, y = best_move
             print(f"Best move: ({x}, {y})")
 
