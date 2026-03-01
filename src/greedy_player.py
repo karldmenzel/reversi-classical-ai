@@ -1,6 +1,5 @@
 #Zijie Zhang, Sep.24/2023
 
-import numpy as np
 import socket, pickle
 from reversi import reversi
 
@@ -21,25 +20,30 @@ def main():
         if turn == 0:
             game_socket.close()
             return
-        
-        #Debug info
-        print(turn)
-        print(board)
 
-        #Local Greedy - Replace with your algorithm
-        x = -1
-        y = -1
-        max = 0
-        game.board = board
-        for i in range(8):
-            for j in range(8):
-                cur = game.step(i, j, turn, False)
-                if cur > max:
-                    max = cur
-                    x, y = i, j
+        next_move = choose_move(turn, board, game)
 
         #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
-        game_socket.send(pickle.dumps([x,y]))
-        
+        game_socket.send(pickle.dumps(next_move))
+
+def choose_move(turn, board, game) -> list[int]:
+    # Debug info
+    # print(turn)
+    # print(board)
+
+    # Local Greedy - Replace with your algorithm
+    x = -1
+    y = -1
+    max = 0
+    game.board = board
+    for i in range(8):
+        for j in range(8):
+            cur = game.step(i, j, turn, False)
+            if cur > max:
+                max = cur
+                x, y = i, j
+
+    return [x, y]
+
 if __name__ == '__main__':
     main()
