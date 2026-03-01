@@ -24,7 +24,15 @@ def main():
             calculate_final_score(board)
             game_socket.close()
             return
-        
+
+        next_move = choose_move(turn, board, game)
+
+        # Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
+        game_socket.send(pickle.dumps(next_move))
+
+# This function is called either by the server in command line mode,
+# or by the main function in visual mode.
+def choose_move(turn, board, game) -> list[int]:
         #Debug info
         print(turn)
         print(board)
@@ -59,7 +67,7 @@ def main():
             # print(best_move_list)
             # print(x, y)
         #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
-        game_socket.send(pickle.dumps([x,y]))
+        return [x, y]
         
 def mini_max(next_moves, turn):
     for i in range(0, len(next_moves)):

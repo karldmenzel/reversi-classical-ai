@@ -1,9 +1,7 @@
 #Zijie Zhang, Sep.24/2023
 
-import numpy as np
 import socket, pickle
 from reversi import reversi
-import time
 
 def main():
     game_socket = socket.socket()
@@ -23,24 +21,32 @@ def main():
             game_socket.close()
             return
         
-        #Debug info
-        print(turn)
-        print(board)
+        next_move = choose_move(turn, board, game)
 
-        #Local Greedy - Replace with your algorithm
-        x = -1
-        y = -1
-        max = 0
-        game.board = board
-        best_move_list = []
+        #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
+        game_socket.send(pickle.dumps(next_move))
 
-        for i in range(8):
-            for j in range(8):
-                cur = game.step(i, j, turn, False)
-                # any move that leads to a flipped piece is stored in the list
-                if cur > 0:
-                    # add tuple to move list where: cur=#of flipped tiles, i=x, j=y
-                    best_move_list.append((cur, i, j))
+# This function is called either by the server in command line mode,
+# or by the main function in visual mode.
+def choose_move(turn, board, game) -> list[int]:
+    # Debug info
+    # print(turn)
+    # print(board)
+
+    # Local Greedy - Replace with your algorithm
+    x = -1
+    y = -1
+    max = 0
+    game.board = board
+    best_move_list = []
+
+    for i in range(8):
+        for j in range(8):
+            cur = game.step(i, j, turn, False)
+            # any move that leads to a flipped piece is stored in the list
+            if cur > 0:
+                # add tuple to move list where: cur=#of flipped tiles, i=x, j=y
+                best_move_list.append((cur, i, j))
 
         # no moves were found
         if len(best_move_list) == 0:
@@ -56,15 +62,15 @@ def main():
             print(best_move_list)
             print(x, y)
         #Send your move to the server. Send (x,y) = (-1,-1) to tell the server you have no hand to play
-        game_socket.send(pickle.dumps([x,y]))
-        
+        return [x, y]
+
 def mini_max(next_moves, turn):
     for i in range(0, len(next_moves)):
-        # if next move is along the walls on the x axis, increase the heuristic value 
-        if next_moves[i][1] == 0 or next_moves[i][1] == 7: 
+        # if next move is along the walls on the x axis, increase the heuristic value
+        if next_moves[i][1] == 0 or next_moves[i][1] == 7:
             next_moves[i] = (next_moves[i][0] * 10, next_moves[i][1], next_moves[i][2])
-        # if next move is along the walls on the y axis, increase the value 
-        if next_moves[i][2] == 0 or next_moves[i][2] == 7: 
+        # if next move is along the walls on the y axis, increase the value
+        if next_moves[i][2] == 0 or next_moves[i][2] == 7:
             next_moves[i] = (next_moves[i][0] * 10, next_moves[i][1], next_moves[i][2])
         # if next move is within the center blocks (i.e. does not give other player a chance at the walls), increase the value
         if turn == 1:
