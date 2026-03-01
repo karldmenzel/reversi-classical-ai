@@ -34,8 +34,8 @@ def main():
 # or by the main function in visual mode.
 def choose_move(turn, board, game) -> list[int]:
         #Debug info
-        print(turn)
-        print(board)
+        # print(turn)
+        # print(board)
         calculate_final_score(board)
 
         #Local Greedy - Replace with your algorithm
@@ -43,24 +43,16 @@ def choose_move(turn, board, game) -> list[int]:
         y = -1
         max = 0
         game.board = board
-        best_move_list = []
-
-        for i in range(8):
-            for j in range(8):
-                cur = game.step(i, j, turn, False)
-                # any move that leads to a flipped piece is stored in the list
-                if cur > 0:
-                    # add tuple to move list where: cur=#of flipped tiles, i=x, j=y
-                    best_move_list.append((cur, i, j))
+        best_move_list = calculate_next_set_of_moves(game, turn)
 
         # no moves were found
         if len(best_move_list) == 0:
             x, y = (-1, -1)
         else:
             # sort the list in order of most flipped pieces, then choose the first best one
-            print("best move list before:", best_move_list)
+            # print("best move list before:", best_move_list)
             mini_max(best_move_list, turn)
-            print("best move list after minimax", best_move_list)
+            # print("best move list after minimax", best_move_list)
             best_move_list = sorted(best_move_list, key=lambda tup: tup[0], reverse=True)
             _, x, y = best_move_list[0]
             # print statements for debugging
@@ -85,6 +77,19 @@ def mini_max(next_moves, turn):
 
     # need to store a list of possible moves, their outcomes, and weigh them
     return
+
+def calculate_next_set_of_moves(game, turn):
+    best_move_list = []
+
+    for i in range(8):
+        for j in range(8):
+            cur = game.step(i, j, turn, False)
+            # any move that leads to a flipped piece is stored in the list
+            if cur > 0:
+                # add tuple to move list where: cur=#of flipped tiles, i=x, j=y
+                best_move_list.append((cur, i, j))
+
+    return best_move_list
 
 if __name__ == '__main__':
     main()
