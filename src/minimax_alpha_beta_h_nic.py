@@ -8,8 +8,10 @@ from reversi import reversi
 from utils import get_legal_moves, apply_move, WEIGHT_MATRIX
 from heuristic_functions import heuristic_nic
 
-
-
+# ── Heuristic selection ───────────────────────────────────────────────────────
+# Set this to any function with the signature: heuristic(board, player) -> float
+CHOSEN_HEURISTIC = heuristic_nic
+# ─────────────────────────────────────────────────────────────────────────────
 
 TIME_LIMIT = 4.0   # seconds per move
 MAX_DEPTH   = 12   # hard cap; iterative deepening rarely reaches this
@@ -120,26 +122,37 @@ def minimax(board, game, depth, alpha, beta, maximizing_player, player, deadline
 
 
 def get_best_move(board, game, player, heuristic):
-    """
-    Iterative-deepening minimax with a 4-second time limit.
-    """
     deadline = time.time() + TIME_LIMIT
     best_move = get_legal_moves(game, player)[0]  # safe fallback
 
     for depth in range(1, MAX_DEPTH + 1):
 
-        # try to find best move in given time-limit if time limit is reached. through exception. return the best move so far
+        # try to find best move in given time-limit if time limit is reached. throw exception. return the best move so far
         try:
             _, move = minimax(board, game, depth,
                               float('-inf'), float('inf'),
                               True, player, deadline, heuristic)
             best_move = move  # only update on a fully completed search
-            print(f"  depth {depth} -> {best_move}")
+            # print(f"  depth {depth} -> {best_move}")
         except TimeUp:
-            print(f"  time up at depth {depth}, using depth {depth - 1} result")
+            # print(f"  time up at depth {depth}, using depth {depth - 1} result")
             break
 
     return best_move
+
+
+def choose_move(turn, board, game) -> list:
+    # A copy of the board allows the algo to mutate the board freely without effecting the actual game board.
+    search_game = reversi()
+    search_game.board = board.copy()
+
+    legal_moves = get_legal_moves(search_game, turn)
+
+    if len(legal_moves) == 0:
+        return [-1, -1]
+
+    x, y = get_best_move(board, search_game, turn, CHOSEN_HEURISTIC)
+    return [x, y]
 
 
 def main():
@@ -167,12 +180,11 @@ def main():
         # Find best move via iterative-deepening minimax (4-second limit)
         game.board = board.copy()
         legal_moves = get_legal_moves(game, turn)
-        chosen_heuristic = heuristic_nic
 
         if len(legal_moves) == 0:
             x, y = -1, -1
         else:
-            best_move = get_best_move(board, game, turn, chosen_heuristic)
+            best_move = get_best_move(board, game, turn, CHOSEN_HEURISTIC)
             x, y = best_move
             print(f"Best move: ({x}, {y})")
 

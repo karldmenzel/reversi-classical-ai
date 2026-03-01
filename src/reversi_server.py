@@ -70,8 +70,7 @@ class drawable_reversi(reversi):
         self.render_text(_screen, f'White : {self.white_count}', 1000, 100)
         self.render_text(_screen, f'Black : {self.black_count}', 1000, 200)
         self.render_text(_screen, f'Hand : {"White" if self.turn == 1 else "Black"}', 1000,500)
-        self.render_text(_screen, f'Time : {self.time}', 1000,600, (255,255,255) if self.time <= 5 else (255, 0, 0))
-        self.time += 1
+        self.render_text(_screen, f'Time : {int(self.time)}', 1000,600, (255,255,255) if self.time <= 5 else (255, 0, 0))
 
 def player_handler(_server : server, _player):
     while True:
@@ -162,7 +161,8 @@ def main():
         game.render(screen)
 
         pygame.display.update()
-        clock.tick(4)
+        dt = clock.tick(4)
+        game.time += dt / 1000.0
 
     game_server.request_play(0, game.board, 0)
     game_server.request_play(0, game.board, 1)
