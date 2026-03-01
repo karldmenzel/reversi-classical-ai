@@ -2,7 +2,7 @@
 from reversi import reversi
 
 # Algorithm 1 -- update the 'from' to choose a different player
-from greedy_player import choose_move as algorithm_1
+from minimax_alpha_beta_h_nic import choose_move as algorithm_1
 
 # Algorithm 2 -- update the 'from' to choose a different player
 from greedy_bfs_player import choose_move as algorithm_2
@@ -53,7 +53,6 @@ class AutoGameServer:
 
         # print("\nFinal Board:")
         # print(self.game.board) #Note the board printed out is mirrored from the actual board
-
         white = self.game.white_count
         black = self.game.black_count
         if white > black:
