@@ -28,8 +28,8 @@ def main():
 
 def choose_move(turn, board, game) -> list[int]:
     # Debug info
-    print(turn)
-    print(board)
+    # print(turn)
+    # print(board)
 
     # Local Greedy - Replace with your algorithm
     x = -1

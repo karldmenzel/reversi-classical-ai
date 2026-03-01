@@ -1,9 +1,13 @@
 
 from reversi import reversi
-from greedy_player import choose_move as player_1_move
-from greedy_bfs_player import choose_move as player_2_move
 
-class AIGameServer:
+# Algorithm 1 -- update the 'from' to choose a different player
+from greedy_player import choose_move as algorithm_1
+
+# Algorithm 2 -- update the 'from' to choose a different player
+from greedy_bfs_player import choose_move as algorithm_2
+
+class AutoGameServer:
     def __init__(self, player1, player2):
         """
         player1 = white (turn = 1)
@@ -28,13 +32,13 @@ class AIGameServer:
             # Player passes
             if x == -1 and y == -1:
                 consecutive_passes += 1
-                print(f"Player {'White' if self.turn == 1 else 'Black'} passes.")
+                print(f"Player {'White' if self.turn == 1 else 'Black'} has no valid moves, passes.")
             else:
                 result = self.game.step(x, y, self.turn)
 
                 if result >= 0:
                     consecutive_passes = 0
-                    print(f"Player {'White' if self.turn == 1 else 'Black'} plays ({x},{y})")
+                    # print(f"Player {'White' if self.turn == 1 else 'Black'} plays ({x},{y})")
                 else:
                     # Illegal move → treat as pass
                     consecutive_passes += 1
@@ -47,30 +51,61 @@ class AIGameServer:
             # Switch turn
             self.turn *= -1
 
-        self.print_result()
+        # print("\nFinal Board:")
+        # print(self.game.board) #Note the board printed out is mirrored from the actual board
 
-    def print_result(self):
         white = self.game.white_count
         black = self.game.black_count
-
-        print("\nFinal Board:")
-        print(self.game.board)
-
-        print(f"\nFinal Score:")
-        print(f"White: {white}")
-        print(f"Black: {black}")
-
         if white > black:
-            print("White Wins!")
+            print(f"White wins {white} to {black}!\n")
+            return 1
         elif black > white:
-            print("Black Wins!")
+            print(f"Black wins {black} to {white}!\n")
+            return -1
         else:
-            print("Draw!")
+            print(f"Game is a draw, {black} to {white}!\n")
+            return 0
 
 if __name__ == "__main__":
-    server = AIGameServer(
-        player1=player_2_move,  # White
-        player2=player_1_move   # Black
+    algorithm_1_wins = 0
+    algorithm_2_wins = 0
+    draws = 0
+
+    print("Beginning game one, algorithm 1 is white, algorithm 2 is black.")
+    game1 = AutoGameServer(
+        player1=algorithm_1,  # White
+        player2=algorithm_2   # Black
     )
 
-    server.play_game()
+    game1_winner = game1.play_game()
+
+    if(game1_winner == 1):
+        algorithm_1_wins += 1
+    elif (game1_winner == -1):
+        algorithm_2_wins += 1
+    else:
+        draws += 1
+
+    print("Beginning game two, algorithm 1 is black, algorithm 2 is white.")
+    game2 = AutoGameServer(
+        player1=algorithm_2,  # White
+        player2=algorithm_1   # Black
+    )
+
+    game2_winner = game2.play_game()
+
+    if game2_winner == -1:
+        algorithm_1_wins += 1
+    elif game2_winner == 1:
+        algorithm_2_wins += 1
+    else:
+        draws += 1
+
+    final_result = game1_winner + game2_winner
+
+    if algorithm_1_wins == algorithm_2_wins:
+        print("Final result: both algorithms tied.")
+    elif algorithm_1_wins > algorithm_2_wins:
+        print("Final result: algorithm 1 wins.")
+    else:
+        print("Final result: algorithm 2 wins.")

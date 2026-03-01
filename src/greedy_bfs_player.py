@@ -28,8 +28,8 @@ def main():
 
 def choose_move(turn, board, game) -> list[int]:
     # Debug info
-    print(turn)
-    print(board)
+    # print(turn)
+    # print(board)
 
     # Local Greedy - Replace with your algorithm
     x = -1
@@ -54,8 +54,8 @@ def choose_move(turn, board, game) -> list[int]:
         best_move_list = sorted(best_move_list, key=lambda tup: tup[0], reverse=True)
         _, x, y = best_move_list[0]
         # print statements for debugging
-        print(best_move_list)
-        print(x, y)
+        # print(best_move_list)
+        # print(x, y)
 
     return [x, y]
 
