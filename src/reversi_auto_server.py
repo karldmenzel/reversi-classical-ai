@@ -2,11 +2,13 @@
 from reversi import reversi
 
 # Algorithm 1 -- update the 'from' to choose a different player
-from greedy_player import choose_move as algorithm_1
+from minimax_alpha_beta_h_nic import choose_move as algorithm_1
 
 # Algorithm 2 -- update the 'from' to choose a different player
 # from greedy_bfs_player import choose_move as algorithm_2
-from bfs_heuristic_player import choose_move as algorithm_2
+# from bfs_heuristic_player import choose_move as algorithm_2
+# from bfs_random_heuristic_player import choose_move as algorithm_2
+from minimax_alpha_beta_h_char import choose_move as algorithm_2
 
 class AutoGameServer:
     def __init__(self, player1, player2):
